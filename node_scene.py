@@ -16,6 +16,7 @@ class Scene:
 
     def addNode(self, node):
         self.nodes.append(node)
+        self.grScene.addItem(node.grNode)
 
     def addEdge(self, edge):
         self.edges.append(edge)
