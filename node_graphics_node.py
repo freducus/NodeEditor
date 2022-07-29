@@ -46,6 +46,9 @@ class QDMGraphicsNode(QGraphicsItem):
                                  self.width-2*self.edge_size,
                                  self.height-2*self.edge_size-self.title_height)
         self.grContent.setWidget(self.content)
+
+    def initSocket(self):
+        pass
     def initTitle(self):
         self.title_item = QGraphicsTextItem(self)
         self.title_item.setDefaultTextColor(self._title_color)
