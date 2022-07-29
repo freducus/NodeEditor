@@ -20,7 +20,7 @@ class QDMGraphicsScene(QGraphicsScene):
         self._pen_dark = QPen(self._color_dark)
         self._pen_dark.setWidth(2)
 
-        self.scene_width, self.scene_height = 600, 600
+        self.scene_width, self.scene_height = 800, 800
         self.setSceneRect(-self.scene_width//2, -self.scene_height//2, self.scene_width, self.scene_height)
 
 

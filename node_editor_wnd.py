@@ -4,7 +4,7 @@ from PyQt5.QtCore import *
 
 
 from node_graphics_scene import QDMGraphicsScene
-
+from node_graphics_view import QDMGraphicsView
 
 class NodeEditorWnd(QWidget):
     def __init__(self, parent=None):
@@ -13,7 +13,7 @@ class NodeEditorWnd(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(200, 200, 800, 600)
+        self.setGeometry(200, 200, 600, 600)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
@@ -23,8 +23,7 @@ class NodeEditorWnd(QWidget):
         self.grScene = QDMGraphicsScene()
 
         # Graphics View
-        self.view = QGraphicsView(self)
-        self.view.setScene(self.grScene)
+        self.view = QDMGraphicsView(self.grScene, self)
         self.layout.addWidget(self.view)
 
         self.setWindowTitle("Node Editor")
@@ -39,4 +38,23 @@ class NodeEditorWnd(QWidget):
 
         rect = self.grScene.addRect(0, 0, 100, 100, outlinePen, greenBrush)
         rect.setFlag(QGraphicsItem.ItemIsMovable, True)
-        rect.setVisible(True)
+
+        text = self.grScene.addText("This is my text", font=QFont("arial"))
+        text.setFlag(QGraphicsItem.ItemIsMovable)
+        text.setDefaultTextColor(QColor("white"))
+
+        widget1 = QPushButton("Hello World")
+        proxy1 = self.grScene.addWidget(widget1)
+        proxy1.setPos(0,30)
+        proxy1.setFlag(QGraphicsItem.ItemIsMovable)
+
+        widget2 = QTextEdit()
+        proxy2 = self.grScene.addWidget(widget2)
+        proxy2.setFlag(QGraphicsItem.ItemIsSelectable)
+        proxy2.setFlag(QGraphicsItem.ItemIsMovable)
+        proxy2.setPos(0, 60)
+
+        line = self.grScene.addLine(-200, -200, 400, -100, outlinePen)
+        line.setFlag(QGraphicsItem.ItemIsMovable)
+        line.setFlag(QGraphicsItem.ItemIsSelectable)
+
