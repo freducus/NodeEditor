@@ -44,4 +44,4 @@ class Node():
         else:
             y = - index * 20 + self.grNode.height - self.grNode.edge_size - self.grNode._padding
 
-        return x,y
+        return [x,y]

@@ -73,7 +73,7 @@ class NodeEditorWnd(QWidget):
         node3.setPosition(200, -150)
 
         edge1 = Edge(self.scene, node1.outputs[0], node2.inputs[0], EDGE_TYPE_DIRECT)
-        edge2 = Edge(self.scene, node1.outputs[0], node2.inputs[0], EDGE_TYPE_BEZIER)
+        edge2 = Edge(self.scene, node2.outputs[0], node3.inputs[0], EDGE_TYPE_BEZIER)
 
     def loadStyleSheet(self, filename):
         print("STYLE loadin:", filename )
