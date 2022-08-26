@@ -3,6 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 from node_node import Node
+from node_edge import *
 from node_scene import Scene
 from node_graphics_view import QDMGraphicsView
 
@@ -16,7 +17,7 @@ class NodeEditorWnd(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(200, 200, 600, 600)
+        self.setGeometry(200, 200, 800, 600)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
@@ -25,7 +26,8 @@ class NodeEditorWnd(QWidget):
         # Graphics Scene
         self.scene = Scene()
 
-        node = Node(self.scene, "My awesome node", [1,2,3], [1])
+        self.addNodes()
+
         # Graphics View
         self.view = QDMGraphicsView(self.scene.grScene, self)
         self.layout.addWidget(self.view)
@@ -61,6 +63,17 @@ class NodeEditorWnd(QWidget):
         line = self.grScene.addLine(-200, -200, 400, -100, outlinePen)
         line.setFlag(QGraphicsItem.ItemIsMovable)
         line.setFlag(QGraphicsItem.ItemIsSelectable)
+
+    def addNodes(self):
+        node1 = Node(self.scene, "My awesome node 1", [1,2,3], [1])
+        node2 = Node(self.scene, "My awesome node 2", [1,2,3], [1])
+        node3 = Node(self.scene, "My awesome node 3", [1,2,3], [1])
+        node1.setPosition(-350, -250)
+        node2.setPosition(-75, 0)
+        node3.setPosition(200, -150)
+
+        edge1 = Edge(self.scene, node1.outputs[0], node2.inputs[0], EDGE_TYPE_DIRECT)
+        edge2 = Edge(self.scene, node1.outputs[0], node2.inputs[0], EDGE_TYPE_BEZIER)
 
     def loadStyleSheet(self, filename):
         print("STYLE loadin:", filename )
