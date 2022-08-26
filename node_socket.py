@@ -1,4 +1,4 @@
-from QDMGraphicsSocket import QDMGraphicsSocket
+from node_graphics_socket import QDMGraphicsSocket
 
 LEFT_TOP = 1
 LEFT_BOTTOM = 2
@@ -14,3 +14,5 @@ class Socket():
         self.position = position
 
         self.grSocket = QDMGraphicsSocket(self.node.grNode)
+
+        self.grSocket.setPos(*self.node.getSocketPosition(self.index, self.position))

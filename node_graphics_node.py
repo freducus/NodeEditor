@@ -33,7 +33,7 @@ class QDMGraphicsNode(QGraphicsItem):
         self.initUI()
 
     def boundingRect(self) -> QRectF:
-        return QRectF(0, 0, 2 * self.edge_size + self.width, 2 * self.edge_size + self.height).normalized()
+        return QRectF(0, 0, self.width, self.height).normalized()
 
     def initUI(self):
         self.setFlag(QGraphicsItem.ItemIsSelectable)
