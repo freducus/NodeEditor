@@ -65,14 +65,14 @@ class NodeEditorWnd(QWidget):
         line.setFlag(QGraphicsItem.ItemIsSelectable)
 
     def addNodes(self):
-        node1 = Node(self.scene, "My awesome node 1", [1,2,3], [1])
-        node2 = Node(self.scene, "My awesome node 2", [1,2,3], [1])
-        node3 = Node(self.scene, "My awesome node 3", [1,2,3], [1])
+        node1 = Node(self.scene, "My awesome node 1", [0,1,2], [1])
+        node2 = Node(self.scene, "My awesome node 2", [0,2,3], [1])
+        node3 = Node(self.scene, "My awesome node 3", [0,3,4], [1])
         node1.setPosition(-350, -250)
         node2.setPosition(-75, 0)
         node3.setPosition(200, -150)
 
-        edge1 = Edge(self.scene, node1.outputs[0], node2.inputs[0], EDGE_TYPE_DIRECT)
+        edge1 = Edge(self.scene, node1.outputs[0], node2.inputs[0], EDGE_TYPE_BEZIER)
         edge2 = Edge(self.scene, node2.outputs[0], node3.inputs[0], EDGE_TYPE_BEZIER)
 
     def loadStyleSheet(self, filename):

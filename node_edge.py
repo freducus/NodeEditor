@@ -4,14 +4,18 @@ EDGE_TYPE_DIRECT = 1
 EDGE_TYPE_BEZIER = 2
 class Edge:
 
-    def __init__(self, scene, start_socket, end_socket, type=EDGE_TYPE_DIRECT):
+    def __init__(self, scene, start_socket, end_socket, edge_type=EDGE_TYPE_DIRECT):
 
         self.scene = scene
 
         self.start_socket = start_socket
-        self.end_socket = end_socket
+        self.start_socket.edge = self
 
-        self.grEdge = QDMGraphicsEdgeDirect(self) if type==EDGE_TYPE_DIRECT else QDMGraphicsEdgeBezier(self)
+        self.end_socket = end_socket
+        if end_socket is not None:
+            self.end_socket.edge = self
+
+        self.grEdge = QDMGraphicsEdgeDirect(self) if edge_type == EDGE_TYPE_DIRECT else QDMGraphicsEdgeBezier(self)
 
         self.updatePosition()
         self.scene.grScene.addItem(self.grEdge)

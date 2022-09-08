@@ -18,13 +18,13 @@ class Node():
         self.outputs = []
         counter = 0
         for item in inputs:
-            socket = Socket(self, counter, position=LEFT_BOTTOM)
+            socket = Socket(self, counter, position=LEFT_BOTTOM, socket_type=item)
             counter += 1
             self.inputs.append(socket)
 
         counter = 0
         for item in outputs:
-            socket = Socket(self, counter, position=RIGHT_TOP)
+            socket = Socket(self, counter, position=RIGHT_TOP, socket_type=item)
             counter += 1
             self.outputs.append(socket)
 
@@ -45,3 +45,8 @@ class Node():
             y = - index * 20 + self.grNode.height - self.grNode.edge_size - self.grNode._padding
 
         return [x,y]
+
+    def updateConectedEdges(self):
+        for socket in self.inputs + self.outputs:
+            if socket.hasEdge():
+                socket.edge.updatePosition()

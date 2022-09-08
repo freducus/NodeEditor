@@ -32,6 +32,10 @@ class QDMGraphicsNode(QGraphicsItem):
 
         self.initUI()
 
+    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        super(QDMGraphicsNode, self).mouseMoveEvent(event)
+        self.node.updateConectedEdges()
+
     def boundingRect(self) -> QRectF:
         return QRectF(0, 0, self.width, self.height).normalized()
 

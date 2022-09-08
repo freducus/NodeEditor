@@ -49,7 +49,7 @@ class QDMGraphicsEdgeBezier(QDMGraphicsEdge):
     def updatePath(self):
         s = self.posSource
         d = self.posDestination
-        dist = (d[0] + s[0])*0.5
+        dist = (d[0] - s[0])*0.5
         if s[0] > d[0]: dist = -dist
         path = QPainterPath(QPoint(self.posSource[0], self.posSource[1]))
         path.cubicTo(s[0]+dist, s[1], d[0]-dist, d[1],
