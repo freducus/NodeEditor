@@ -42,7 +42,7 @@ class QDMGraphicsScene(QGraphicsScene):
         lines_light = []
         lines_dark = []
         for x in range(first_left, right, self.gridSize):
-            if x % (self.gridSize*self.gridSquares) != 0:
+            if x % (self.gridSize * self.gridSquares) != 0:
                 lines_light.append(QLine(x, top, x, bottom))
             else: lines_dark.append(QLine(x, top, x, bottom))
         for y in range(first_top, bottom, self.gridSize):
@@ -52,7 +52,14 @@ class QDMGraphicsScene(QGraphicsScene):
 
         # Draw lines
         painter.setPen(self._pen_light)
-        painter.drawLines(*lines_light)
+        try:
+            painter.drawLines(*lines_light)  # supporting PyQt5
+        except TypeError:
+            painter.drawLines(lines_light)  # supporting PySide2
+
         painter.setPen(self._pen_dark)
-        painter.drawLines(*lines_dark)
+        try:
+            painter.drawLines(*lines_dark)  # supporting PyQt5
+        except TypeError:
+            painter.drawLines(lines_dark)  # supporting PySide2
 

@@ -3,7 +3,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 class QDMGraphicsSocket(QGraphicsItem):
-    def __init__(self, parent=None, socket_type=1):
+    def __init__(self, socket, parent=None, socket_type=1):
+        self.socket = socket
         super().__init__(parent)
 
         self.radius = 6.0

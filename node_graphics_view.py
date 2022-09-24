@@ -1,21 +1,28 @@
 import math
 
+from PyQt5 import QtGui
 from PyQt5.QtGui import QPainter
 from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+from node_edge import EDGE_TYPE_BEZIER, Edge
 from node_graphics_socket import QDMGraphicsSocket
+from node_graphics_edge import QDMGraphicsEdge
 
 MODE_NOOP = 1
 MODE_EDGE_DRAG = 2
 
 EDGE_DRAG_STARET_THRESHOLD = 4
 
+DEBUG = True
+
+
 class QDMGraphicsView(QGraphicsView):
 
     def __init__(self, grScene, parent=None):
         super().__init__(parent)
+        self.dragEdge = None
         self.last_lmb_click_scene_pos = None
         self.grScene = grScene
 
@@ -63,12 +70,12 @@ class QDMGraphicsView(QGraphicsView):
         self.setDragMode(QGraphicsView.ScrollHandDrag)
 
         fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
-                                   Qt.LeftButton, event.buttons(), event.modifiers())
+                                Qt.LeftButton, event.buttons(), event.modifiers())
         super().mousePressEvent(fakeEvent)
 
     def middleMouseButtonRelease(self, event):
         self.setDragMode(QGraphicsView.NoDrag)
-        
+
     def leftMouseButtonPress(self, event):
         item = self.getItemAtClick(event)
         self.last_lmb_click_scene_pos = self.mapToScene(event.pos())
@@ -85,18 +92,42 @@ class QDMGraphicsView(QGraphicsView):
     def rightMouseButtonPress(self, event):
         super().mousePressEvent(event)
 
+        item = self.getItemAtClick(event)
+        if DEBUG:
+            if isinstance(item, QDMGraphicsEdge): print(
+                f'RMB: {item.edge} connecting sockets: {item.edge.start_socket}<-->{item.edge.end_socket}')
+            if isinstance(item, QDMGraphicsSocket): print(f'RMB: {item.socket} has edge {item.socket.edge}')
+            if item is None:
+                print('SCENE:')
+                print('  Nodes:')
+                for node in self.grScene.scene.nodes:
+                    print(f'    {node}')
+                print('  Edges:')
+                for edge in self.grScene.scene.edges:
+                    print(f'    {edge}')
+
     def edgeDragStart(self, item):
         self.mode = MODE_EDGE_DRAG
-        print('Start dragging edge')
-        print(' Assign Start socket')
+        if DEBUG: print('View:edgeDragStart - Start dragging edge')
+        if DEBUG: print(f'View:edgeDragStart - Assign Start socket to {item.socket}')
+        self.previousEdge = item.socket.edge
+        self.last_start_socket = item.socket
+        self.dragEdge = Edge(self.grScene.scene, item.socket, None, EDGE_TYPE_BEZIER)
+        if DEBUG: print(f'View:edgeDragStart - dragEdge: {self.dragEdge}')
 
     def edgeDragEnd(self, item):
         self.mode = MODE_NOOP
-        print('End dragging edge')
-
         if type(item) is QDMGraphicsSocket:
-            print(' ass End sock')
+            if DEBUG: print(f'View:edgeDragEnd -ass End sock {item}')
+            self.dragEdge.start_socket = self.last_start_socket
+            self.dragEdge.end_socket = item.socket
+            self.dragEdge.start_cocket.setConnectedEdge(self.dragEdge)
+            self.dragEdge.end_cocket.setConnectedEdge(self.dragEdge)
+
             return True
+        if DEBUG: print('View:edgeDragEnd - End dragging edge')
+        self.dragEdge.remove()
+        self.dragEdge = None
 
         return False
 
@@ -105,7 +136,7 @@ class QDMGraphicsView(QGraphicsView):
 
         dist_scene = new_lmb_release_scene_pos - self.last_lmb_click_scene_pos
         dist_scene = math.sqrt(QPointF.dotProduct(dist_scene, dist_scene))
-        return dist_scene > EDGE_DRAG_STARET_THRESHOLD*EDGE_DRAG_STARET_THRESHOLD
+        return dist_scene > EDGE_DRAG_STARET_THRESHOLD * EDGE_DRAG_STARET_THRESHOLD
 
     def leftMouseButtonRelease(self, event):
         item = self.getItemAtClick(event)
@@ -119,7 +150,7 @@ class QDMGraphicsView(QGraphicsView):
 
     def rightMouseButtonRelease(self, event):
         super().mouseReleaseEvent(event)
-            
+
     def wheelEvent(self, event: QWheelEvent) -> None:
         zoomOutFactor = 1 / self.zoomInFactor
 
@@ -131,6 +162,13 @@ class QDMGraphicsView(QGraphicsView):
             self.zoom -= self.zoomStep
 
         self.scale(zoomFactor, zoomFactor)
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        if self.mode==MODE_EDGE_DRAG:
+            pos = self.mapToScene(event.pos())
+            self.dragEdge.grEdge.setDestination(pos.x(), pos.y())
+            self.dragEdge.grEdge.update()
+        super().mouseMoveEvent(event)
 
     def getItemAtClick(self, event):
         pos = event.pos()

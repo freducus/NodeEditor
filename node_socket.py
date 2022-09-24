@@ -14,7 +14,7 @@ class Socket():
         self.position = position
         self.socket_type = socket_type
 
-        self.grSocket = QDMGraphicsSocket(self.node.grNode, socket_type)
+        self.grSocket = QDMGraphicsSocket(self, self.node.grNode, socket_type)
 
         self.grSocket.setPos(*self.node.getSocketPosition(self.index, self.position))
 
@@ -27,3 +27,6 @@ class Socket():
 
     def hasEdge(self):
         return self.edge is not None
+
+    def __str__(self):
+        return f'<Socket {hex(id(self))[2:5]:s}..{hex(id(self))[-3:]:s}>'
