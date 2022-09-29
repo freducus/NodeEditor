@@ -36,6 +36,8 @@ class QDMGraphicsNode(QGraphicsItem):
         super(QDMGraphicsNode, self).mouseMoveEvent(event)
         self.node.updateConectedEdges()
 
+
+
     def boundingRect(self) -> QRectF:
         return QRectF(0, 0, self.width, self.height).normalized()
 
@@ -55,6 +57,7 @@ class QDMGraphicsNode(QGraphicsItem):
         pass
     def initTitle(self):
         self.title_item = QGraphicsTextItem(self)
+        self.title_item.node = self.node
         self.title_item.setDefaultTextColor(self._title_color)
         self.title_item.setFont(self._title_font)
         self.title_item.setPos(self._padding, 0)
