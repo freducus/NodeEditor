@@ -1,5 +1,7 @@
 from node_graphics_edge import *
 
+DEBUG=True
+
 EDGE_TYPE_DIRECT = 1
 EDGE_TYPE_BEZIER = 2
 class Edge:
@@ -44,10 +46,18 @@ class Edge:
         self.start_socket = None
 
     def remove(self):
+        if DEBUG: print("# Removing Edge", self)
+        if DEBUG: print(" - removing Edge from all sockets")
         self.remove_from_sockets()
+        if DEBUG: print(" - removing grEdge")
         self.scene.grScene.removeItem(self.grEdge)
         self.grEdge = None
-        self.scene.removeEdge(self)
+        if DEBUG: print(" - removing Edge from scene")
+        try:
+            self.scene.removeEdge(self)
+        except ValueError:
+            pass
+        if DEBUG: print(" - everything is done")
 
     def __str__(self):
         return f'<Edge {hex(id(self))[2:5]:s}..{hex(id(self))[-3:]:s}>'

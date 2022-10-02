@@ -2,6 +2,7 @@ from node_graphics_node import QDMGraphicsNode
 from node_content_widget import QDMNodeContentWidget
 from node_socket import *
 
+DEBUG = True
 class Node():
     def __init__(self, scene, title="Undefined Node", inputs=[], outputs=[]):
         self.scene = scene
@@ -53,3 +54,16 @@ class Node():
 
     def __str__(self):
         return f'<Node {hex(id(self))[2:5]:s}..{hex(id(self))[-3:]:s}>'
+
+    def remove(self):
+        if DEBUG: print("Removing Node", self)
+        if DEBUG: print(" - removing all edges from socket")
+        for socket in self.inputs+self.outputs:
+            if socket.hasEdge():
+                socket.edge.remove()
+        if DEBUG: print(" - removing grNode")
+        self.scene.grScene.removeItem(self.grNode)
+        self.grNode = None
+        if DEBUG: print(" - removing Node from the scene")
+        self.scene.removeNode(self)
+        if DEBUG: print(" - everything was done")
