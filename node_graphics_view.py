@@ -84,6 +84,10 @@ class QDMGraphicsView(QGraphicsView):
 
         if DEBUG: print("LMB click on", item, self.debug_modifiers(event))
         if hasattr(item, 'node')  or isinstance(item, QDMGraphicsEdge) or item is None:
+            try:
+                print(item.node)
+            except Exception:
+                pass
             if event.modifiers() & Qt.ShiftModifier:
                 if DEBUG: print("LMB + Shift on", item)
                 event.ignore()
@@ -92,6 +96,8 @@ class QDMGraphicsView(QGraphicsView):
                                         event.modifiers() | Qt.ControlModifier)
                 super().mousePressEvent(fakeEvent)
                 return
+        else:
+            self.grScene.clearSelection()
 
         if type(item) is QDMGraphicsSocket:
             if self.mode == MODE_NOOP:

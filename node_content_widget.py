@@ -14,6 +14,7 @@ class QDMNodeContentWidget(QWidget):
 
         self.wdg_label = QLabel("Some title")
         self.layout.addWidget(self.wdg_label)
+        self.layout.addWidget(QPushButton())
         self.layout.addWidget(QTextEdit())
 
 
