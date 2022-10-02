@@ -34,9 +34,11 @@ class QDMGraphicsNode(QGraphicsItem):
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         super(QDMGraphicsNode, self).mouseMoveEvent(event)
-        self.node.updateConectedEdges()
 
-
+        # TODO: Optimize to just update selected nodes
+        for node in self.scene().scene.nodes:
+            if node.grNode.isSelected():
+                node.updateConectedEdges()
 
     def boundingRect(self) -> QRectF:
         return QRectF(0, 0, self.width, self.height).normalized()

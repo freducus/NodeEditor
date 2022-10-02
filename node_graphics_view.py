@@ -82,7 +82,8 @@ class QDMGraphicsView(QGraphicsView):
         item = self.getItemAtClick(event)
         self.last_lmb_click_scene_pos = self.mapToScene(event.pos())
 
-        if hasattr(item, 'node')  or isinstance(item, QDMGraphicsEdge):
+        if DEBUG: print("LMB click on", item, self.debug_modifiers(event))
+        if hasattr(item, 'node')  or isinstance(item, QDMGraphicsEdge) or item is None:
             if event.modifiers() & Qt.ShiftModifier:
                 if DEBUG: print("LMB + Shift on", item)
                 event.ignore()
@@ -163,9 +164,8 @@ class QDMGraphicsView(QGraphicsView):
     def leftMouseButtonRelease(self, event):
         item = self.getItemAtClick(event)
 
-        if hasattr(item, 'node') or isinstance(item, QDMGraphicsEdge):
+        if hasattr(item, 'node') or isinstance(item, QDMGraphicsEdge) or item is None:
             if event.modifiers() & Qt.ShiftModifier:
-                if DEBUG: print("LMB + Shift on", item)
                 event.ignore()
                 fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
                                         Qt.LeftButton, Qt.NoButton,
@@ -201,6 +201,14 @@ class QDMGraphicsView(QGraphicsView):
             self.dragEdge.grEdge.setDestination(pos.x(), pos.y())
             self.dragEdge.grEdge.update()
         super().mouseMoveEvent(event)
+
+    def debug_modifiers(self, event):
+        out = "MODS: "
+        if event.modifiers() & Qt.ShiftModifier: out += "SHIFT"
+        if event.modifiers() & Qt.ControlModifier: out += "CTRL"
+        if event.modifiers() & Qt.AltModifier: out += "ALT"
+
+        return out
 
     def getItemAtClick(self, event):
         pos = event.pos()
