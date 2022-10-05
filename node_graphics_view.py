@@ -1,17 +1,19 @@
 import math
 
-from PyQt5 import QtGui
-from PyQt5.QtGui import QPainter
-from PyQt5.QtWidgets import QGraphicsView
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from qtpy import QtGui
+from qtpy.QtGui import QPainter
+from qtpy.QtWidgets import QGraphicsView, QApplication
+from qtpy.QtCore import *
+from qtpy.QtGui import *
 
 from node_edge import EDGE_TYPE_BEZIER, Edge
+from node_graphics_cutline import QDMCutLine
 from node_graphics_socket import QDMGraphicsSocket
 from node_graphics_edge import QDMGraphicsEdge
 
 MODE_NOOP = 1
 MODE_EDGE_DRAG = 2
+MODE_EDGE_CUT = 3
 
 EDGE_DRAG_STARET_THRESHOLD = 4
 
@@ -37,9 +39,14 @@ class QDMGraphicsView(QGraphicsView):
         self.zoomStep = 1
         self.zoomRange = [0, 30]
 
+        self.cutline = QDMCutLine()
+        self.grScene.addItem(self.cutline)
+        self.cutline.update()
+
     def initUI(self):
         self.setRenderHints(
             QPainter.Antialiasing | QPainter.HighQualityAntialiasing | QPainter.TextAntialiasing | QPainter.SmoothPixmapTransform)
+
         self.ViewportUpdateMode(QGraphicsView.FullViewportUpdate)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -97,6 +104,7 @@ class QDMGraphicsView(QGraphicsView):
                 super().mousePressEvent(fakeEvent)
                 return
         else:
+            print('Clear selection')
             self.grScene.clearSelection()
 
         if type(item) is QDMGraphicsSocket:
@@ -107,6 +115,14 @@ class QDMGraphicsView(QGraphicsView):
             res = self.edgeDragEnd(item)
             if res: return
 
+        if item is None:
+            if event.modifiers() & Qt.ControlModifier:
+                self.mode = MODE_EDGE_CUT
+                fakeEvent = QMouseEvent(QEvent.MouseButtonRelease, event.localPos(), event.screenPos(),
+                                        Qt.LeftButton, Qt.NoButton, event.modifiers())
+                super().mouseReleaseEvent(fakeEvent)
+                QApplication.setOverrideCursor(Qt.CrossCursor)
+                return
         super().mousePressEvent(event)
 
     def rightMouseButtonPress(self, event):
@@ -187,6 +203,18 @@ class QDMGraphicsView(QGraphicsView):
                 res = self.edgeDragEnd(item)
                 if res: return
 
+        if self.mode == MODE_EDGE_CUT:
+            self.cutIntersectingEdges()
+            self.cutline.line_points = []
+            self.cutline.update()
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
+            self.mode = MODE_NOOP
+            fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
+                                    Qt.LeftButton, Qt.NoButton,
+                                    event.modifiers() | Qt.ControlModifier)
+            super().mouseReleaseEvent(fakeEvent)
+            return
+
         super().mouseReleaseEvent(event)
 
     def rightMouseButtonRelease(self, event):
@@ -205,10 +233,16 @@ class QDMGraphicsView(QGraphicsView):
         self.scale(zoomFactor, zoomFactor)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        if self.mode==MODE_EDGE_DRAG:
+        if self.mode == MODE_EDGE_DRAG:
             pos = self.mapToScene(event.pos())
             self.dragEdge.grEdge.setDestination(pos.x(), pos.y())
             self.dragEdge.grEdge.update()
+
+        if self.mode == MODE_EDGE_CUT:
+            pos = self.mapToScene(event.pos())
+            self.cutline.line_points.append(pos)
+            self.cutline.update()
+
         super().mouseMoveEvent(event)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
@@ -217,6 +251,15 @@ class QDMGraphicsView(QGraphicsView):
         else:
             super(QDMGraphicsView, self).keyPressEvent(event)
 
+    def cutIntersectingEdges(self):
+
+        for ix in range(len(self.cutline.line_points)-1):
+            p1 = self.cutline.line_points[ix]
+            p2 = self.cutline.line_points[ix+1]
+
+            for edge in self.grScene.scene.edges:
+                if edge.grEdge.intersectWith(p1, p2):
+                    edge.remove()
     def deleteSelected(self):
         for item in self.grScene.selectedItems():
             if isinstance(item, QDMGraphicsEdge):

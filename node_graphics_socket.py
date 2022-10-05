@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from qtpy.QtWidgets import *
+from qtpy.QtGui import *
+from qtpy.QtCore import *
 
 class QDMGraphicsSocket(QGraphicsItem):
     def __init__(self, socket, parent=None, socket_type=1):
