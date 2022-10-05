@@ -205,8 +205,8 @@ class QDMGraphicsView(QGraphicsView):
 
         if self.mode == MODE_EDGE_CUT:
             self.cutIntersectingEdges()
+            self.cutline.prepareGeometryChange()
             self.cutline.line_points = []
-            self.cutline.update()
             QApplication.setOverrideCursor(Qt.ArrowCursor)
             self.mode = MODE_NOOP
             fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
@@ -240,8 +240,8 @@ class QDMGraphicsView(QGraphicsView):
 
         if self.mode == MODE_EDGE_CUT:
             pos = self.mapToScene(event.pos())
+            self.cutline.prepareGeometryChange()
             self.cutline.line_points.append(pos)
-            self.cutline.update()
 
         super().mouseMoveEvent(event)
 
