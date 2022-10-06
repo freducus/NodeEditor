@@ -1,10 +1,13 @@
+from collections import OrderedDict
+from node_serializable import Serializable
 from node_graphics_node import QDMGraphicsNode
 from node_content_widget import QDMNodeContentWidget
 from node_socket import *
 
 DEBUG = True
-class Node():
+class Node(Serializable):
     def __init__(self, scene, title="Undefined Node", inputs=[], outputs=[]):
+        super().__init__()
         self.scene = scene
 
         self.title = title
@@ -67,3 +70,22 @@ class Node():
         if DEBUG: print(" - removing Node from the scene")
         self.scene.removeNode(self)
         if DEBUG: print(" - everything was done")
+
+    def serialize(self):
+        inputs, outputs = [], []
+        for socket in self.inputs: inputs.append(socket.serialize())
+        for socket in self.outputs: outputs.append(socket.serialize())
+        ser_content = self.content.serialize() if isinstance(self.content, Serializable) else {}
+        return OrderedDict([
+            ('id', self.id),
+            ('title', self.title),
+            ('pos_x', self.grNode.scenePos().x()),
+            ('pos_y', self.grNode.scenePos().y()),
+            ('inputs', inputs),
+            ('outputs', outputs),
+            ('content', ser_content),
+        ])
+
+
+    def desiarilize(self, data, hashmap=[]):
+        print("deserialization data", data)

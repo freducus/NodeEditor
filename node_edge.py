@@ -1,17 +1,21 @@
+from collections import OrderedDict
+from node_serializable import Serializable
 from node_graphics_edge import *
 
 DEBUG=True
 
 EDGE_TYPE_DIRECT = 1
 EDGE_TYPE_BEZIER = 2
-class Edge:
+class Edge(Serializable):
 
     def __init__(self, scene, start_socket, end_socket, edge_type=EDGE_TYPE_DIRECT):
 
+        super().__init__()
         self.scene = scene
 
         self.start_socket = start_socket
         self.start_socket.edge = self
+        self.edge_type = edge_type
 
         self.end_socket = end_socket
         if end_socket is not None:
@@ -61,3 +65,14 @@ class Edge:
 
     def __str__(self):
         return f'<Edge {hex(id(self))[2:5]:s}..{hex(id(self))[-3:]:s}>'
+
+    def serialize(self) -> OrderedDict:
+        return OrderedDict([
+            ('id', self.id),
+            ('edge_type', self.edge_type),
+            ('start', self.start_socket.id if self.start_socket is not None else None),
+            ('end', self.end_socket.id if self.end_socket is not None else None),
+        ])
+
+    def deserialize(self, data, hashmap=[]):
+        print("deserialization data", data)
