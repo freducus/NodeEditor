@@ -48,7 +48,7 @@ class QDMGraphicsEdge(QGraphicsPathItem):
     def calcPath(self):
         raise NotImplemented
 
-    def intersectWith(self, p1, p2):
+    def intersectsWith(self, p1, p2):
         cutpath = QPainterPath(p1)
         cutpath.lineTo(p2)
         path = self.calcPath()

@@ -8,7 +8,7 @@ from node_edge import Edge, EDGE_TYPE_BEZIER
 from node_graphics_view import QDMGraphicsView
 
 
-class NodeEditorWnd(QWidget):
+class NodeEditorWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -19,7 +19,6 @@ class NodeEditorWnd(QWidget):
 
 
     def initUI(self):
-        self.setGeometry(200, 200, 800, 600)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -36,8 +35,6 @@ class NodeEditorWnd(QWidget):
         self.layout.addWidget(self.view)
 
 
-        self.setWindowTitle("Node Editor")
-        self.show()
 
 
     def addNodes(self):
