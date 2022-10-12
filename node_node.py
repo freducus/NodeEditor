@@ -10,13 +10,14 @@ class Node(Serializable):
         super().__init__()
         self.scene = scene
 
-        self.title = title
-
+        self._title = None
         self.content = QDMNodeContentWidget()
         self.grNode = QDMGraphicsNode(self)
 
         self.scene.addNode(self)
 
+
+        self.title = title
 
         self.inputs = []
         self.outputs = []
@@ -38,6 +39,16 @@ class Node(Serializable):
     @property
     def pos(self):
         return self.grNode.pos()
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+        self.grNode.title = self._title
+
     def getSocketPosition(self, index, position):
         if position in (LEFT_TOP, LEFT_BOTTOM):
             x=0
@@ -87,5 +98,27 @@ class Node(Serializable):
         ])
 
 
-    def desiarilize(self, data, hashmap=[]):
-        print("deserialization data", data)
+    def deserialize(self, data, hashmap={}):
+        self.id = data['id']
+        hashmap[data['id']] = self
+
+        self.title = data['title']
+        self.setPosition(data['pos_x'], data['pos_y'])
+
+        data['inputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000)
+        data['outputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000)
+
+        self.inputs = []
+        for socket_data in data['inputs']:
+            new_socket = Socket(node=self, index=socket_data['index'], position=socket_data['position'],
+                                socket_type=socket_data['socket_type'])
+            new_socket.deserialize(socket_data, hashmap)
+            self.inputs.append(new_socket)
+
+        for socket_data in data['outputs']:
+            new_socket = Socket(node=self, index=socket_data['index'], position=socket_data['position'],
+                                socket_type=socket_data['socket_type'])
+            new_socket.deserialize(socket_data, hashmap)
+            self.outputs.append(new_socket)
+
+        return True

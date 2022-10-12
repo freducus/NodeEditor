@@ -8,24 +8,62 @@ EDGE_TYPE_DIRECT = 1
 EDGE_TYPE_BEZIER = 2
 class Edge(Serializable):
 
-    def __init__(self, scene, start_socket, end_socket, edge_type=EDGE_TYPE_DIRECT):
+    def __init__(self, scene, start_socket=None, end_socket=None, edge_type=EDGE_TYPE_DIRECT):
 
         super().__init__()
         self.scene = scene
 
+        self._start_socket = None
+        self._end_socket = None
+
         self.start_socket = start_socket
-        self.start_socket.edge = self
+        self.end_socket = end_socket
+
         self.edge_type = edge_type
 
-        self.end_socket = end_socket
-        if end_socket is not None:
+        self.scene.addEdge(self)
+
+    @property
+    def start_socket(self):
+        return self._start_socket
+    
+    @start_socket.setter
+    def start_socket(self, value):
+        self._start_socket = value
+        if self.start_socket is not None:
+            self.start_socket.edge = self
+
+    @property
+    def end_socket(self):
+        return self._end_socket
+
+    @end_socket.setter
+    def end_socket(self, value):
+        self._end_socket = value
+        if self.end_socket is not None:
             self.end_socket.edge = self
 
-        self.grEdge = QDMGraphicsEdgeDirect(self) if edge_type == EDGE_TYPE_DIRECT else QDMGraphicsEdgeBezier(self)
+    @property
+    def edge_type(self):
+        return self._edge_type
 
-        self.updatePosition()
+    @edge_type.setter
+    def edge_type(self, value):
+        if hasattr(self, 'grEdge') and self.grEdge is not None:
+            self.scene.grScene.removeItem(self.grEdge)
+
+        self._edge_type = value
+        if self.edge_type == EDGE_TYPE_DIRECT:
+            self.grEdge = QDMGraphicsEdgeDirect(self)
+        elif self.edge_type == EDGE_TYPE_BEZIER:
+            self.grEdge = QDMGraphicsEdgeBezier(self)
+        else:
+            self.grEdge = QDMGraphicsEdgeBezier(self)
+
         self.scene.grScene.addItem(self.grEdge)
-        self.scene.addEdge(self)
+
+        if self.start_socket is not None:
+            self.updatePosition()
 
     def updatePosition(self):
         source_pos = self.start_socket.getSocketPosition()
@@ -74,5 +112,11 @@ class Edge(Serializable):
             ('end', self.end_socket.id if self.end_socket is not None else None),
         ])
 
-    def deserialize(self, data, hashmap=[]):
-        print("deserialization data", data)
+    def deserialize(self, data, hashmap={}):
+        self.id = data['id']
+        self.start_socket = hashmap[data['start']]
+        self.end_socket = hashmap[data['end']]
+        self.edge_type = data['edge_type']
+
+
+

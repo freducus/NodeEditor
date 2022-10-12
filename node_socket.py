@@ -43,4 +43,7 @@ class Socket(Serializable):
         ])
 
     def deserialize(self, data, hashmap=[]):
-        print("deserialization data", data)
+        self.id = data['id']
+        hashmap[data['id']] = self
+
+
