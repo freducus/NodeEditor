@@ -1,3 +1,4 @@
+import json
 import os.path
 
 from PyQt5.QtWidgets import *
@@ -11,6 +12,12 @@ class NodeEditorWindow(QMainWindow):
 
         self.filename = None
         self.initUI()
+
+        QApplication.instance().clipboard().dataChanged.connect(self.onClipboardChanged)
+
+    def onClipboardChanged(self):
+        clip = QApplication.instance().clipboard()
+        print("Clipboard changed: ", clip.text())
 
     def createAct(self, name, shortcut, tooltip, callback):
         act = QAction(name, self)
@@ -37,6 +44,10 @@ class NodeEditorWindow(QMainWindow):
         editMenu = menubar.addMenu('&Edit')
         editMenu.addAction(self.createAct('&Undo', 'Ctrl+Z', 'Undo last operation', self.onEditUndo))
         editMenu.addAction(self.createAct('&Redo', 'Ctrl+Shit+Z', 'Redo last operation', self.onEditRedo))
+        editMenu.addSeparator()
+        editMenu.addAction(self.createAct('Cu&t', 'Ctrl+X', 'Cut', self.onEditCut))
+        editMenu.addAction(self.createAct('Copy', 'Ctrl+C', 'Copy', self.onEditCopy))
+        editMenu.addAction(self.createAct('Paste', 'Ctrl+V', 'Paste', self.onEditPaste))
         editMenu.addSeparator()
         editMenu.addAction(self.createAct('&Delete', 'Del', 'Delete selected', self.onEditDelete))
 
@@ -90,3 +101,27 @@ class NodeEditorWindow(QMainWindow):
     def onEditDelete(self):
         self.centralWidget().view.deleteSelected()
 
+    def onEditCut(self):
+        data = self.centralWidget().scene.clipboard.serializeSelected(delete=True)
+        str_data = json.dumps(data, indent=4)
+        QApplication.instance().clipoard().setText(str_data)
+    def onEditCopy(self):
+        data = self.centralWidget().scene.clipboard.serializeSelected(delete=False)
+        str_data = json.dumps(data, indent=4)
+        QApplication.instance().clipboard().setText(str_data)
+
+    def onEditPaste(self):
+        raw_data = QApplication.instance().clipboard().text()
+
+        try:
+            data = json.loads(raw_data)
+        except ValueError as e:
+            print("Pasting of not valid json data!", e)
+            return
+
+        # check if the jason data are correct
+        if 'nodes' not in data:
+            print("JSON does not contain any nodes")
+            return
+
+        self.centralWidget().scene.clipboard.deserializeFromClipboard(data)
