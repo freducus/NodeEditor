@@ -1,6 +1,7 @@
 import json
 import os.path
 
+from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
 
 from node_editor_widget import NodeEditorWidget
@@ -39,7 +40,7 @@ class NodeEditorWindow(QMainWindow):
         fileMenu.addAction(self.createAct('&Save', 'Ctrl+S', 'Save file', self.onFileSave))
         fileMenu.addAction(self.createAct('&Save as', 'Ctrl+Shift+S', 'Save file as', self.onFileSaveAs))
         fileMenu.addSeparator()
-        fileMenu.addAction(self.createAct('&Exit', 'Ctrl+Q', 'Exit', self.close))
+        fileMenu.addAction(self.createAct('E&xit', 'Ctrl+Q', 'Exit', self.close))
 
         editMenu = menubar.addMenu('&Edit')
         editMenu.addAction(self.createAct('&Undo', 'Ctrl+Z', 'Undo last operation', self.onEditUndo))
@@ -53,6 +54,7 @@ class NodeEditorWindow(QMainWindow):
 
 
         nodeeditor = NodeEditorWidget(self)
+        nodeeditor.scene.addHasBeenModifiedListener(self.changeTitle)
         self.setCentralWidget(nodeeditor)
 
         self.statusBar().showMessage('')
@@ -61,14 +63,51 @@ class NodeEditorWindow(QMainWindow):
         nodeeditor.view.scenePosChanged.connect(self.onScenePosChanged)
 
         self.setGeometry(200, 200, 800, 600)
-        self.setWindowTitle("Node Editor")
+        self.changeTitle()
         self.show()
 
+    def changeTitle(self):
+        title = "Node Editor - "
+        if self.filename is None:
+            title += "New"
+        else:
+            title += os.path.basename(self.filename)
+
+        if self.centralWidget().scene.has_been_modified:
+            title += '*'
+        self.setWindowTitle(title)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        if self.maybeSave():
+            event.accept()
+        else:
+            event.ignore()
+
+    def maybeSave(self):
+        if not self.isModified():
+            return True
+
+        res = QMessageBox.warning(self, "About to loose your work",
+                                  "The document has been modified.\n Do you want to save your changes?",
+                                  QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+
+        if res == QMessageBox.Save:
+            return self.onFileSave()
+        elif res == QMessageBox.Cancel:
+            return False
+        else:
+            return True
+
+    def isModified(self):
+        return self.centralWidget().scene.has_been_modified
     def onScenePosChanged(self, x, y):
         self.status_mouse_position.setText(f'Scene Pos: [{x},{y}]')
 
     def onFileNew(self):
-        self.centralWidget().scene.clear()
+        if self.maybeSave():
+            self.centralWidget().scene.clear()
+            self.filename = None
+            self.changeTitle()
 
     def onFileOpen(self):
         fname, filter = QFileDialog.getOpenFileName(self, 'Open graph from file')
@@ -76,6 +115,8 @@ class NodeEditorWindow(QMainWindow):
             return
         if os.path.isfile(fname):
             self.centralWidget().scene.loadFromFile(fname)
+            self.filename = fname
+            self.changeTitle()
 
     def onFileSave(self):
         if self.filename is None:
@@ -83,14 +124,15 @@ class NodeEditorWindow(QMainWindow):
         else:
             self.centralWidget().scene.saveToFile(self.filename)
             self.statusBar().showMessage(f"Successfully saved {self.filename}")
+            return True
 
     def onFileSaveAs(self):
         fname, filter = QFileDialog.getSaveFileName(self, 'Save graph from file')
         if fname == "":
-            return
+            return False
         self.filename = fname
         self.onFileSave()
-
+        return True
 
     def onEditUndo(self):
         self.centralWidget().scene.history.undo()
